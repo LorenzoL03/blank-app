@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
 
 def calcola_montante (capitale_iniziale, tasso_rendimento, anni, costo_gestione):
     montante = capitale_iniziale
