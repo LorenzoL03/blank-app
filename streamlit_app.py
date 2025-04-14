@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import matplotlib.pyplot as plt
 
 def calcola_montante (capitale_iniziale, tasso_rendimento, anni, costo_gestione):
     montante = capitale_iniziale
@@ -15,7 +16,7 @@ def calcola_montante (capitale_iniziale, tasso_rendimento, anni, costo_gestione)
 
     return montante, commissioni_totali, evoluzione_capitale
 
-def calcola_montante_senza_costi(capitale_iniziale, tasso_rendimento, anni):
+def calcola_montante_senza_costi(capitale_iniziale, tasso_rendimento, anni, costo_gestione):
     montante = capitale_iniziale
     for _ in range(anni):
         montante *= (1 + tasso_rendimento)
@@ -33,7 +34,7 @@ costo_alto = st.number_input("Costo di Gestione Alto (%)", min_value=0.0, max_va
 montante_basso, commissioni_basse, evoluzione_basso = calcola_montante(capitale_iniziale, tasso_rendimento, anni, costo_basso)
 montante_medio, commissioni_medie, evoluzione_medio = calcola_montante(capitale_iniziale, tasso_rendimento, anni, costo_medio)
 montante_alto, commissioni_alte, evoluzione_alto = calcola_montante(capitale_iniziale, tasso_rendimento, anni, costo_alto)
-montante_zero_costi = calcola_montante_senza_costi(capitale_iniziale, tasso_rendimento, anni)
+montante_zero_costi = calcola_montante_senza_costi(capitale_iniziale, tasso_rendimento, anni, 0)
 
 dati_tabella = {'Anni': list(evoluzione_basso.keys())}
 if evoluzione_basso:
@@ -45,12 +46,12 @@ if evoluzione_alto:
 
 df_risultati = pd.DataFrame(dati_tabella)
 
-differenza_basso = montante_zero_costi - montante_basso
-differenza_medio = montante_zero_costi - montante_medio
-differenza_alto = montante_zero_costi - montante_alto
+differenza_basso =  - (montante_zero_costi - montante_basso)
+differenza_medio = - (montante_zero_costi - montante_medio)
+differenza_alto = - (montante_zero_costi - montante_alto)
 
 differenze_df = pd.DataFrame({
-    'Anni': [f"Delta"],
+    'Anni': [f"Differenza rispetto a commissioni nulle"],
     'Costi Bassi (€)': [f"{differenza_basso:.2f}"],
     'Costi Medi (€)': [f"{differenza_medio:.2f}"],
     'Costi Alti (€)': [f"{differenza_alto:.2f}"]
@@ -61,13 +62,4 @@ df_risultati = pd.concat([df_risultati, differenze_df], ignore_index=True)
 st.subheader("Evoluzione del Capitale")
 st.dataframe(df_risultati)
 
-st.subheader("Commissioni Totali Pagate")
-labels = ['Bassi', 'Medi', 'Alti']
-commissioni = [commissioni_basse, commissioni_medie, commissioni_alte]
-
-fig, ax = plt.subplots()
-ax.bar(labels, commissioni)
-ax.set_ylabel("Commissioni Totali (€)")
-ax.set_title("Commissioni Totali Pagate per Scenario di Costo")
-st.pyplot(fig)
 
