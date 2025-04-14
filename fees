@@ -1,21 +1,21 @@
 import streamlit as st
 import pandas as pd
 
-def calcola_montante (capitale_iniziale, tasso_rendimento, anni, costo_gestione):
+def calcola_montante (capitale_iniziale, tasso_rendimento, anni, costo_gestione, versamento):
     montante = capitale_iniziale
     commissioni_totali = 0
     evoluzione_capitale = {0: capitale_iniziale}
 
     for anno in range(1, anni + 1):
         commissione = montante * costo_gestione
-        montante = montante * (1 + tasso_rendimento) * (1 - costo_gestione)
+        montante = montante * (1 + tasso_rendimento) * (1 - costo_gestione) + versamento * 12
         commissioni_totali += commissione
         if anno % 1 == 0:
             evoluzione_capitale[anno] = montante
 
     return montante, commissioni_totali, evoluzione_capitale
 
-def calcola_montante_senza_costi(capitale_iniziale, tasso_rendimento, anni, costo_gestione):
+def calcola_montante_senza_costi(capitale_iniziale, tasso_rendimento, anni, costo_gestione, versamento):
     montante = capitale_iniziale
     for _ in range(anni):
         montante *= (1 + tasso_rendimento)
@@ -23,17 +23,18 @@ def calcola_montante_senza_costi(capitale_iniziale, tasso_rendimento, anni, cost
 
 st.title("Simulazione Impatto Costi di Gestione su Investimento")
 
-capitale_iniziale = st.number_input("Capitale Iniziale (€)", min_value=0.0, step=1000.0, value=100.0)
-tasso_rendimento = st.number_input("Tasso di Rendimento Annuo (%)", min_value=0.0, max_value=20.0, step=0.5, value=5.0) / 100
-anni = st.slider("Orizzonte Temporale (anni)", min_value=5, max_value=50, step=5, value=20)
-costo_basso = st.number_input("Costo di Gestione Basso (%)", min_value=0.0, max_value=15.0, step=0.5, value=0.0) / 100
-costo_medio = st.number_input("Costo di Gestione Medio (%)", min_value=0.0, max_value=15.0, step=0.5, value=0.0) / 100
-costo_alto = st.number_input("Costo di Gestione Alto (%)", min_value=0.0, max_value=15.0, step=0.5, value=0.0) / 100
+capitale_iniziale = st.number_input("Capitale Iniziale (€)", min_value = 0.0, step = 1000.0, value = 100.0)
+tasso_rendimento = st.number_input("Tasso di Rendimento Annuo (%)", min_value = 0.0, max_value = 20.0, step = 0.5, value = 5.0) / 100
+anni = st.slider("Orizzonte Temporale (anni)", min_value = 5, max_value = 50, step = 5, value = 20)
+versamento = st.number_input("Versamento mensile (€)", min_value = 0.0, step=100.0, value=100.0)
+costo_basso = st.number_input("Costo di Gestione Basso (%)", min_value = 0.0, max_value = 15.0, step = 0.5, value = 0.0) / 100
+costo_medio = st.number_input("Costo di Gestione Medio (%)", min_value=0.0, max_value = 15.0, step = 0.5, value = 0.0) / 100
+costo_alto = st.number_input("Costo di Gestione Alto (%)", min_value = 0.0, max_value = 15.0, step = 0.5, value = 0.0) / 100
 
-montante_basso, commissioni_basse, evoluzione_basso = calcola_montante(capitale_iniziale, tasso_rendimento, anni, costo_basso)
-montante_medio, commissioni_medie, evoluzione_medio = calcola_montante(capitale_iniziale, tasso_rendimento, anni, costo_medio)
-montante_alto, commissioni_alte, evoluzione_alto = calcola_montante(capitale_iniziale, tasso_rendimento, anni, costo_alto)
-montante_zero_costi = calcola_montante_senza_costi(capitale_iniziale, tasso_rendimento, anni, 0)
+montante_basso, commissioni_basse, evoluzione_basso = calcola_montante(capitale_iniziale, tasso_rendimento, anni, costo_basso, versamento)
+montante_medio, commissioni_medie, evoluzione_medio = calcola_montante(capitale_iniziale, tasso_rendimento, anni, costo_medio, versamento)
+montante_alto, commissioni_alte, evoluzione_alto = calcola_montante(capitale_iniziale, tasso_rendimento, anni, costo_alto, versamento)
+montante_zero_costi = calcola_montante_senza_costi(capitale_iniziale, tasso_rendimento, anni, 0, versamento)
 
 dati_tabella = {'Anni': list(evoluzione_basso.keys())}
 if evoluzione_basso:
@@ -60,5 +61,3 @@ df_risultati = pd.concat([df_risultati, differenze_df], ignore_index=True)
 
 st.subheader("Evoluzione del Capitale")
 st.dataframe(df_risultati)
-
-
